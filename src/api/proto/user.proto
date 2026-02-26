@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+package user;
+
+// User - 用户基本信息
+message User {
+  string token = 1;
+  string nickname = 2;
+  string name = 3;
+  string phone_number = 4;
+  string address = 5;
+  string is_important = 6;
+  string avatar = 7;
+  string permission = 8;
+}
+
+// PasswordLoginRequest - 密码登录请求
+message PasswordLoginRequest {
+  string phone_number = 1;
+  string password = 2;
+}
+
+// PasswordLoginResponse - 密码登录响应
+message PasswordLoginResponse {
+  User user = 1;
+  int32 code = 2;
+  string message = 3;
+}
+
+// UserRequest - 用户信息请求
+message UserRequest {
+  string target_openid = 10;
+  string nickname = 2;
+  string name = 3;
+  string phone_number = 4;
+  string password = 5;
+  string address = 6;
+  string is_important = 7;
+  string avatar = 8;
+  string permission = 9;
+}
+
+// UserResponse - 用户信息响应
+message UserResponse {
+  User user = 1;
+  int32 code = 2;
+  string message = 3;
+}
+
+// ApplyPermission - 权限申请
+message ApplyPermission {
+  string code = 1;
+  int32 apply_type = 2;
+  int64 expire_time = 3;
+}
+
+// ApplyPermissionResponse - 权限申请响应
+message ApplyPermissionResponse {
+  ApplyPermission apply_permission = 1;
+  int32 code = 2;
+  string message = 3;
+}
+
+// AdminManagedUser - 管理员管理的用户
+message AdminManagedUser {
+  string open_id = 1;
+  string nickname = 2;
+  string name = 3;
+  string phone_number = 4;
+  string address = 5;
+  string is_important = 6;
+  string avatar = 7;
+  string permission = 8;
+}
+
+// AdminManagerResponse - 管理员管理响应
+message AdminManagerResponse {
+  repeated AdminManagedUser users = 1;
+  int32 code = 2;
+  string message = 3;
+}
+
+// ChangePasswordRequest - 修改密码请求
+message ChangePasswordRequest {
+  string password = 1;
+}
+
+// ChangePasswordResponse - 修改密码响应
+message ChangePasswordResponse {
+  int32 code = 1;
+  string message = 2;
+}
