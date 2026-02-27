@@ -47,3 +47,13 @@
 .el-range-separator {
   box-sizing: content-box;
 }
+
+// 全局覆盖 el-tree-node__content 的默认高度
+// 彻底移除 Element UI 默认的固定高度，避免元素重叠
+.el-tree-node__content {
+  height: auto !important;
+  min-height: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  line-height: normal !important;
+}

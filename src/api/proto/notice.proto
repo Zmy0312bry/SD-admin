@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package notice;
+
+// Request for notice operations
+message NoticeRequest {
+  string content = 1;
+}
+
+// Notice information
+message Notice {
+  int32 id = 1;
+  string content = 2;
+}
+
+// Response for notice operations
+message NoticeResponse {
+  optional Notice notice = 1;
+  int32 code = 2;
+  string message = 3;
+}

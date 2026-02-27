@@ -28,13 +28,23 @@ function convertKeysToCamelCase(obj) {
 
 // Proto 包名映射
 const protoPackages = {
-  user: 'user'
+  user: 'user',
+  slideshow: 'slideshow',
+  notice: 'notice'
 }
 
 // Proto 文件路径映射
 const protoPaths = {
   user: () => {
     const content = require('!raw-loader!@/api/proto/user.proto')
+    return content.default || content
+  },
+  slideshow: () => {
+    const content = require('!raw-loader!@/api/proto/slideshow.proto')
+    return content.default || content
+  },
+  notice: () => {
+    const content = require('!raw-loader!@/api/proto/notice.proto')
     return content.default || content
   }
 }
