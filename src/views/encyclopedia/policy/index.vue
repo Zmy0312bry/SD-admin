@@ -150,66 +150,66 @@
 
 <script>
 export default {
-  name: "Policy",
+  name: 'Policy',
   data() {
     return {
       // 树形数据
       policyTree: [
         {
           id: 1,
-          label: "养老服务政策",
-          type: "category",
+          label: '养老服务政策',
+          type: 'category',
           children: [
             {
               id: 11,
-              label: "居家养老服务补贴政策",
-              type: "policy",
-              description: "为居家老人提供生活照料、家政服务等方面的补贴",
+              label: '居家养老服务补贴政策',
+              type: 'policy',
+              description: '为居家老人提供生活照料、家政服务等方面的补贴'
             },
             {
               id: 12,
-              label: "社区养老服务设施建设政策",
-              type: "policy",
-              description: "支持社区养老服务中心、日间照料中心等设施建设",
-            },
-          ],
+              label: '社区养老服务设施建设政策',
+              type: 'policy',
+              description: '支持社区养老服务中心、日间照料中心等设施建设'
+            }
+          ]
         },
         {
           id: 2,
-          label: "医疗保障政策",
-          type: "category",
+          label: '医疗保障政策',
+          type: 'category',
           children: [
             {
               id: 21,
-              label: "老年人基本医疗保险政策",
-              type: "policy",
-              description: "老年人基本医疗保险参保及相关待遇政策",
+              label: '老年人基本医疗保险政策',
+              type: 'policy',
+              description: '老年人基本医疗保险参保及相关待遇政策'
             },
             {
               id: 22,
-              label: "长期护理保险政策",
-              type: "policy",
-              description: "为失能老人提供长期护理保险保障",
-            },
-          ],
+              label: '长期护理保险政策',
+              type: 'policy',
+              description: '为失能老人提供长期护理保险保障'
+            }
+          ]
         },
         {
           id: 3,
-          label: "文化娱乐政策",
-          type: "category",
+          label: '文化娱乐政策',
+          type: 'category',
           children: [
             {
               id: 31,
-              label: "老年文化活动政策",
-              type: "policy",
-              description: "组织开展适合老年人的文化娱乐活动",
-            },
-          ],
-        },
+              label: '老年文化活动政策',
+              type: 'policy',
+              description: '组织开展适合老年人的文化娱乐活动'
+            }
+          ]
+        }
       ],
       defaultProps: {
-        children: "children",
-        label: "label",
+        children: 'children',
+        label: 'label'
       },
 
       // 对话框状态
@@ -218,91 +218,91 @@ export default {
 
       // 表单数据
       categoryForm: {
-        name: "",
+        name: ''
       },
       policyForm: {
-        title: "",
-        content: "",
-        categoryId: null,
+        title: '',
+        content: '',
+        categoryId: null
       },
 
       // 表单验证规则
       categoryRules: {
         name: [
-          { required: true, message: "请输入目录名称", trigger: "blur" },
+          { required: true, message: '请输入目录名称', trigger: 'blur' },
           {
             min: 2,
             max: 50,
-            message: "长度在 2 到 50 个字符",
-            trigger: "blur",
-          },
-        ],
+            message: '长度在 2 到 50 个字符',
+            trigger: 'blur'
+          }
+        ]
       },
       policyRules: {
         title: [
-          { required: true, message: "请输入政策标题", trigger: "blur" },
+          { required: true, message: '请输入政策标题', trigger: 'blur' },
           {
             min: 5,
             max: 100,
-            message: "长度在 5 到 100 个字符",
-            trigger: "blur",
-          },
+            message: '长度在 5 到 100 个字符',
+            trigger: 'blur'
+          }
         ],
         content: [
-          { required: true, message: "请输入政策内容", trigger: "blur" },
+          { required: true, message: '请输入政策内容', trigger: 'blur' },
           {
             min: 10,
             max: 1000,
-            message: "长度在 10 到 1000 个字符",
-            trigger: "blur",
-          },
-        ],
-      },
-    };
+            message: '长度在 10 到 1000 个字符',
+            trigger: 'blur'
+          }
+        ]
+      }
+    }
   },
   methods: {
     // 显示新增目录对话框
     showAddCategoryDialog() {
-      this.categoryForm.name = "";
-      this.addCategoryDialogVisible = true;
+      this.categoryForm.name = ''
+      this.addCategoryDialogVisible = true
       this.$nextTick(() => {
         if (this.$refs.categoryForm) {
-          this.$refs.categoryForm.clearValidate();
+          this.$refs.categoryForm.clearValidate()
         }
-      });
+      })
     },
 
     // 确认添加目录
     handleAddCategory() {
       this.$refs.categoryForm.validate((valid) => {
         if (valid) {
-          const newId = Math.max(...this.policyTree.map((item) => item.id)) + 1;
+          const newId = Math.max(...this.policyTree.map((item) => item.id)) + 1
           const newCategory = {
             id: newId,
             label: this.categoryForm.name,
-            type: "category",
-            children: [],
-          };
-          this.policyTree.push(newCategory);
-          this.$message.success("目录添加成功");
-          this.addCategoryDialogVisible = false;
+            type: 'category',
+            children: []
+          }
+          this.policyTree.push(newCategory)
+          this.$message.success('目录添加成功')
+          this.addCategoryDialogVisible = false
         }
-      });
+      })
     },
 
     // 显示新增政策对话框
     showAddPolicyDialog(category) {
       this.policyForm = {
-        title: "",
-        content: "",
-        categoryId: category.id,
-      };
-      this.addPolicyDialogVisible = true;
+        title: '',
+        content: '',
+        categoryId: category.id
+      }
+      this.addPolicyDialogVisible = true
       this.$nextTick(() => {
         if (this.$refs.policyForm) {
-          this.$refs.policyForm.clearValidate();
+          this.$refs.policyForm.clearValidate()
         }
-      });
+      })
     },
 
     // 确认添加政策
@@ -311,7 +311,7 @@ export default {
         if (valid) {
           const category = this.policyTree.find(
             (item) => item.id === this.policyForm.categoryId
-          );
+          )
           if (category) {
             const newId =
               Math.max(
@@ -319,70 +319,70 @@ export default {
                   item.children.map((child) => child.id)
                 ),
                 0
-              ) + 1;
+              ) + 1
             const newPolicy = {
               id: newId,
               label: this.policyForm.title,
-              type: "policy",
-              description: this.policyForm.content.substring(0, 50) + "...",
-              fullContent: this.policyForm.content,
-            };
-            category.children.push(newPolicy);
-            this.$message.success("政策添加成功");
-            this.addPolicyDialogVisible = false;
+              type: 'policy',
+              description: this.policyForm.content.substring(0, 50) + '...',
+              fullContent: this.policyForm.content
+            }
+            category.children.push(newPolicy)
+            this.$message.success('政策添加成功')
+            this.addPolicyDialogVisible = false
           }
         }
-      });
+      })
     },
 
     // 删除目录
     removeCategory(node, data) {
-      this.$confirm(`确定要删除目录'${data.label}'及其所有政策吗？`, "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning",
+      this.$confirm(`确定要删除目录'${data.label}'及其所有政策吗？`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
       })
         .then(() => {
           const index = this.policyTree.findIndex(
             (item) => item.id === data.id
-          );
+          )
           if (index !== -1) {
-            this.policyTree.splice(index, 1);
-            this.$message.success("目录删除成功");
+            this.policyTree.splice(index, 1)
+            this.$message.success('目录删除成功')
           }
         })
-        .catch(() => {});
+        .catch(() => {})
     },
 
     // 删除政策
     removePolicy(node, data) {
-      this.$confirm(`确定要删除政策'${data.label}'吗？`, "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning",
+      this.$confirm(`确定要删除政策'${data.label}'吗？`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
       })
         .then(() => {
-          const parent = node.parent;
+          const parent = node.parent
           const index = parent.data.children.findIndex(
             (item) => item.id === data.id
-          );
+          )
           if (index !== -1) {
-            parent.data.children.splice(index, 1);
-            this.$message.success("政策删除成功");
+            parent.data.children.splice(index, 1)
+            this.$message.success('政策删除成功')
           }
         })
-        .catch(() => {});
+        .catch(() => {})
     },
 
     // 查看政策详情
     viewPolicy(data) {
       this.$alert(data.fullContent || data.description, data.label, {
-        confirmButtonText: "关闭",
-        customClass: "policy-detail-dialog",
-      });
-    },
-  },
-};
+        confirmButtonText: '关闭',
+        customClass: 'policy-detail-dialog'
+      })
+    }
+  }
+}
 </script>
 
 <style lang="scss" scoped>
@@ -406,13 +406,13 @@ export default {
       display: block;
       width: 100%;
 
-      // 一级目录样式
+      // 一级目录样式 - 突出显示
       .category-node {
         display: flex;
         align-items: center;
         width: 100%;
-        padding: 12px 16px;
-        margin: 6px 0;
+        padding: 14px 18px;
+        margin: 8px 0;
         background: #fdf6ec;
         border: 1px solid #e6a23c;
         border-radius: 6px;
@@ -426,10 +426,10 @@ export default {
         }
 
         .category-icon {
-          font-size: 18px;
-          margin-right: 10px;
-          width: 32px;
-          height: 32px;
+          font-size: 20px;
+          margin-right: 12px;
+          width: 36px;
+          height: 36px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -440,8 +440,8 @@ export default {
         }
 
         .node-label {
-          font-size: 15px;
-          font-weight: 600;
+          font-size: 16px;
+          font-weight: 700;
           color: #e6a23c;
           flex-shrink: 0;
           margin-right: 12px;
@@ -453,9 +453,15 @@ export default {
           padding-left: 12px;
           border-left: 1px solid rgba(230, 162, 60, 0.3);
           display: flex;
-          gap: 6px;
+          gap: 8px;
           flex-shrink: 0;
           align-items: center;
+
+          // 增大操作按钮字号
+          ::v-deep .el-button {
+            font-size: 14px;
+            padding: 6px 12px;
+          }
 
           .delete-btn {
             color: #f56c6c;
@@ -466,12 +472,12 @@ export default {
         }
       }
 
-      // 政策条目样式
+      // 政策条目样式 - 二级缩进显示
       .policy-node {
         display: flex;
         align-items: center;
         width: 100%;
-        padding: 12px 16px;
+        padding: 12px 16px 12px 50px; // 增加左侧缩进
         margin: 6px 0;
         background: #ecf5ff;
         border: 1px solid #b3d8ff;
@@ -486,10 +492,10 @@ export default {
         }
 
         .policy-icon {
-          font-size: 18px;
+          font-size: 16px;
           margin-right: 10px;
-          width: 32px;
-          height: 32px;
+          width: 28px;
+          height: 28px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -501,7 +507,7 @@ export default {
 
         .node-label {
           font-size: 14px;
-          font-weight: 500;
+          font-weight: 600;
           color: #303133;
           flex-shrink: 0;
           margin-right: 12px;
@@ -523,9 +529,15 @@ export default {
           padding-left: 12px;
           border-left: 1px solid #e4e7ed;
           display: flex;
-          gap: 6px;
+          gap: 8px;
           flex-shrink: 0;
           align-items: center;
+
+          // 增大操作按钮字号
+          ::v-deep .el-button {
+            font-size: 14px;
+            padding: 6px 12px;
+          }
 
           .delete-btn {
             color: #f56c6c;
