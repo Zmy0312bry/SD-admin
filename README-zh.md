@@ -62,6 +62,13 @@ npm run lint -- --fix
 
 ```
 
+// ✅ 正确方式：使用 fetchMediaObjectUrl 通过 axios 请求
+import { fetchMediaObjectUrl } from '@/utils/media'
+
+async loadImage() {
+  const objectUrl = await fetchMediaObjectUrl('your-uuid')
+  this.imageUrl = objectUrl
+}
 
 浏览器访问 [http://localhost:9528](http://localhost:9528)
 

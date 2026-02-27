@@ -1,8 +1,21 @@
+import request from '@/utils/request'
 
 /**
  * 媒体文件基础 URL
  */
 const MEDIA_BASE_URL = process.env.VUE_APP_BASE_API || '/api'
+
+/**
+ * 获取媒体文件下载 URL（可直接用于 img 标签 src，自动携带 token）
+ * @param {string} uuid - 媒体文件索引/UUID
+ * @returns {string} - 完整的媒体文件下载 URL
+ */
+export function getMediaDownloadUrl(uuid) {
+  if (!uuid) {
+    return ''
+  }
+  return `${MEDIA_BASE_URL}/mutil_media/download?uuid=${uuid}`
+}
 
 /**
  * 获取媒体文件 URL
@@ -26,13 +39,13 @@ export async function fetchMediaBlob(uuid) {
     throw new Error('UUID is required')
   }
 
-  const response = await fetch(`${MEDIA_BASE_URL}/mutil_media/download?uuid=${uuid}}`)
+  const response = await request({
+    url: `/mutil_media/download?uuid=${uuid}`,
+    method: 'get',
+    responseType: 'blob'
+  })
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch media: ${response.status}`)
-  }
-
-  return response.blob()
+  return response.data
 }
 
 /**
@@ -83,7 +96,10 @@ export async function downloadMedia(uuid, filename = 'download') {
  * @param {string} defaultAvatar - 默认头像 URL
  * @returns {string} - 头像 URL
  */
-export function getAvatarUrl(avatar, defaultAvatar = 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif') {
+export function getAvatarUrl(
+  avatar,
+  defaultAvatar = 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif'
+) {
   if (!avatar) {
     return defaultAvatar
   }
@@ -93,13 +109,4 @@ export function getAvatarUrl(avatar, defaultAvatar = 'https://wpimg.wallstcn.com
   }
   // 否则直接返回原始值（可能是完整 URL）
   return avatar
-}
-
-export default {
-  getMediaUrl,
-  fetchMediaBlob,
-  fetchMediaBase64,
-  fetchMediaObjectUrl,
-  downloadMedia,
-  getAvatarUrl
 }

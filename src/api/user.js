@@ -10,6 +10,7 @@ export function login(loginData) {
   return new Promise((resolve, reject) => {
     (async() => {
       try {
+        console.log('[login] 发送请求:', loginData)
         const protoBuffer = await proto.jsonToProto(
           'user',
           'PasswordLoginRequest',
@@ -33,6 +34,8 @@ export function login(loginData) {
           response.data
         )
 
+        console.log('[login] 接收响应:', result)
+
         if (result.code !== 200) {
           reject(new Error(result.message || '登录失败'))
           return
@@ -55,6 +58,7 @@ export function getInfo() {
   return new Promise((resolve, reject) => {
     (async() => {
       try {
+        console.log('[getInfo] 发送请求: GET /user/info')
         const response = await request({
           url: '/user/info',
           method: 'get',
@@ -66,6 +70,8 @@ export function getInfo() {
           'UserResponse',
           response.data
         )
+
+        console.log('[getInfo] 接收响应:', result)
 
         if (result.code !== 200) {
           reject(new Error(result.message || '获取用户信息失败'))
@@ -90,6 +96,7 @@ export function changePassword(passwordData) {
   return new Promise((resolve, reject) => {
     (async() => {
       try {
+        console.log('[changePassword] 发送请求:', passwordData)
         const protoBuffer = await proto.jsonToProto(
           'user',
           'ChangePasswordRequest',
@@ -112,6 +119,8 @@ export function changePassword(passwordData) {
           'ChangePasswordResponse',
           response.data
         )
+
+        console.log('[changePassword] 接收响应:', result)
 
         if (result.code !== 200) {
           reject(new Error(result.message || '修改密码失败'))
@@ -136,6 +145,7 @@ export function updateUserInfo(userData) {
   return new Promise((resolve, reject) => {
     (async() => {
       try {
+        console.log('[updateUserInfo] 发送请求:', userData)
         const protoBuffer = await proto.jsonToProto(
           'user',
           'UserRequest',
@@ -143,7 +153,7 @@ export function updateUserInfo(userData) {
         )
 
         const response = await request({
-          url: '/user/info',
+          url: '/user/modify',
           method: 'put',
           data: protoBuffer,
           responseType: 'arraybuffer',
@@ -158,6 +168,8 @@ export function updateUserInfo(userData) {
           'UserResponse',
           response.data
         )
+
+        console.log('[updateUserInfo] 接收响应:', result)
 
         if (result.code !== 200) {
           reject(new Error(result.message || '修改个人信息失败'))
@@ -181,6 +193,7 @@ export function getUserList() {
   return new Promise((resolve, reject) => {
     (async() => {
       try {
+        console.log('[getUserList] 发送请求：GET /admin/user/list')
         const response = await request({
           url: '/admin/user/list',
           method: 'get',
@@ -192,6 +205,8 @@ export function getUserList() {
           'AdminManagerResponse',
           response.data
         )
+
+        console.log('[getUserList] 接收响应:', result)
 
         if (result.code !== 200) {
           reject(new Error(result.message || '获取用户列表失败'))
@@ -216,6 +231,7 @@ export function applyPermission(applyData) {
   return new Promise((resolve, reject) => {
     (async() => {
       try {
+        console.log('[applyPermission] 发送请求:', applyData)
         const protoBuffer = await proto.jsonToProto(
           'user',
           'ApplyPermission',
@@ -239,6 +255,8 @@ export function applyPermission(applyData) {
           response.data
         )
 
+        console.log('[applyPermission] 接收响应:', result)
+
         if (result.code !== 200) {
           reject(new Error(result.message || '申请权限失败'))
           return
@@ -254,7 +272,7 @@ export function applyPermission(applyData) {
 }
 
 /**
- * 上传头像 - POST /multi_media?avatar=true
+ * 上传头像 - POST /mutil_media?avatar=true
  * @param {File} file - 文件对象
  * @returns {Promise<Object>} - 返回上传结果 { avatar: 'uuid' }
  */
@@ -262,17 +280,24 @@ export function uploadAvatar(file) {
   return new Promise((resolve, reject) => {
     (async() => {
       try {
+        console.log('[uploadAvatar] 发送请求:', {
+          fileName: file.name,
+          fileSize: file.size,
+          fileType: file.type
+        })
         const formData = new FormData()
         formData.append('file', file)
 
         const response = await request({
-          url: '/multi_media?avatar=true',
+          url: '/mutil_media?avatar=true',
           method: 'post',
           data: formData,
           headers: {
             'Content-Type': 'multipart/form-data'
           }
         })
+
+        console.log('[uploadAvatar] 接收响应:', response)
 
         if (response.code !== 200) {
           reject(new Error(response.message || '上传头像失败'))

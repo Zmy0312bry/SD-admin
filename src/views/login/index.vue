@@ -57,7 +57,7 @@
       >Login</el-button>
 
       <div class="tips">
-        <span style="margin-right: 20px">手机号：13800138000</span>
+        <span style="margin-right: 20px">手机号：15624990312</span>
         <span> 密码：123456</span>
       </div>
     </el-form>
@@ -86,7 +86,7 @@ export default {
     }
     return {
       loginForm: {
-        phone_number: '13800138000',
+        phone_number: '15624990312',
         password: '123456'
       },
       loginRules: {

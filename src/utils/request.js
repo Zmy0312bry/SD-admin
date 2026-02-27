@@ -43,6 +43,11 @@ service.interceptors.response.use(
   (response) => {
     const res = response.data
 
+    // 如果是 Blob 响应（媒体文件、图片等），直接返回，不进行 code 检查
+    if (res instanceof Blob) {
+      return response
+    }
+
     // 如果是 Protobuf 响应（arraybuffer），直接返回，由 api 层解析
     if (res instanceof ArrayBuffer) {
       return response

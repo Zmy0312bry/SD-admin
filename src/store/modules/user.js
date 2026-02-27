@@ -10,6 +10,7 @@ const getDefaultState = () => {
     nickname: '',
     phone_number: '',
     address: '',
+    is_important: '',
     permission: ''
   }
 }
@@ -38,6 +39,9 @@ const mutations = {
   SET_ADDRESS: (state, address) => {
     state.address = address
   },
+  SET_IS_IMPORTANT: (state, is_important) => {
+    state.is_important = is_important
+  },
   SET_PERMISSION: (state, permission) => {
     state.permission = permission
   },
@@ -46,8 +50,11 @@ const mutations = {
     state.name = userInfo.name || ''
     state.nickname = userInfo.nickname || ''
     state.avatar = userInfo.avatar || ''
-    state.phone_number = userInfo.phone_number || ''
+    // 支持驼峰命名 phoneNumber 和下划线命名 phone_number
+    state.phone_number = userInfo.phoneNumber || userInfo.phone_number || ''
     state.address = userInfo.address || ''
+    // 支持驼峰命名 isImportant 和下划线命名 is_important
+    state.is_important = userInfo.isImportant || userInfo.is_important || ''
     state.permission = userInfo.permission || ''
   }
 }

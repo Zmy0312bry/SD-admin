@@ -11,7 +11,10 @@
     <div class="right-menu">
       <el-dropdown class="avatar-container" trigger="click">
         <div class="avatar-wrapper">
-          <img :src="userAvatar" class="user-avatar">
+          <div v-if="!avatar || avatar === 'false'" class="avatar-icon-wrapper">
+            <i class="el-icon-user-solid avatar-icon" />
+          </div>
+          <img v-else :src="userAvatar" class="user-avatar">
           <span class="user-name">{{ userName }}</span>
           <i class="el-icon-caret-bottom" />
         </div>
@@ -39,7 +42,19 @@
     >
       <div class="profile-dialog-content">
         <div class="avatar-upload">
-          <img :src="avatarPreviewUrl" class="avatar-preview">
+          <div class="avatar-preview-wrapper">
+            <div
+              v-if="!editForm.avatar && !avatarPreviewUrl"
+              class="avatar-preview-icon"
+            >
+              <i class="el-icon-user-solid" />
+            </div>
+            <img
+              v-else
+              :src="avatarPreviewUrl || defaultAvatar"
+              class="avatar-preview"
+            >
+          </div>
           <el-upload
             ref="avatarUpload"
             class="avatar-uploader"
@@ -55,9 +70,10 @@
               :loading="avatarLoading"
               style="margin-top: 10px"
             >
-              {{ avatarLoading ? "上传中" : "选择头像" }}
+              {{ avatarLoading ? "上传中..." : "选择头像" }}
             </el-button>
           </el-upload>
+          <p v-if="uploadStatus" class="upload-status">{{ uploadStatus }}</p>
         </div>
         <el-form
           ref="editForm"
@@ -71,11 +87,10 @@
           <el-form-item label="姓名">
             <el-input v-model="editForm.name" placeholder="请输入姓名" />
           </el-form-item>
-          <el-form-item label="手机号">
+          <el-form-item label="手机号" prop="phone_number">
             <el-input
               v-model="editForm.phone_number"
               placeholder="请输入手机号"
-              disabled
             />
           </el-form-item>
           <el-form-item label="地址">
@@ -155,10 +170,9 @@ import { mapGetters } from 'vuex'
 import Breadcrumb from '@/components/Breadcrumb'
 import Hamburger from '@/components/Hamburger'
 import { changePassword, updateUserInfo, uploadAvatar } from '@/api/user'
-import { getAvatarUrl } from '@/utils/media'
+import { fetchMediaObjectUrl } from '@/utils/media'
 
-const DEFAULT_AVATAR =
-  'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif'
+const DEFAULT_AVATAR = ''
 
 export default {
   components: {
@@ -170,7 +184,7 @@ export default {
       if (!value) {
         callback(new Error('请输入密码'))
       } else if (value.length < 6) {
-        callback(new Error('密码长度不能少于6位'))
+        callback(new Error('密码长度不能少于 6 位'))
       } else {
         callback()
       }
@@ -184,6 +198,15 @@ export default {
         callback()
       }
     }
+    const validatePhoneNumber = (rule, value, callback) => {
+      if (!value) {
+        callback(new Error('请输入手机号'))
+      } else if (!/^1[3-9]\d{9}$/.test(value)) {
+        callback(new Error('请输入正确的手机号格式'))
+      } else {
+        callback()
+      }
+    }
     return {
       defaultAvatar: DEFAULT_AVATAR,
       editProfileDialogVisible: false,
@@ -192,6 +215,9 @@ export default {
       passwordLoading: false,
       avatarLoading: false,
       avatarFile: null,
+      uploadStatus: '',
+      avatarBlobUrl: '',
+      editFormAvatarBlobUrl: '',
       editForm: {
         nickname: '',
         name: '',
@@ -202,6 +228,11 @@ export default {
       passwordForm: {
         password: '',
         confirmPassword: ''
+      },
+      editRules: {
+        phone_number: [
+          { required: true, validator: validatePhoneNumber, trigger: 'blur' }
+        ]
       },
       passwordRules: {
         password: [
@@ -227,18 +258,40 @@ export default {
       'address'
     ]),
     userAvatar() {
-      return getAvatarUrl(this.avatar, this.defaultAvatar)
+      // 如果有 Blob URL（携带 token），直接使用
+      if (this.avatarBlobUrl) {
+        return this.avatarBlobUrl
+      }
+      // 如果没有头像或头像为 false，返回空字符串（显示默认 icon）
+      if (!this.avatar || this.avatar === 'false') {
+        return ''
+      }
+      // 否则返回空字符串，等待 loadAvatar 加载 Blob URL
+      // 这样可以确保所有头像请求都通过 axios 携带 token
+      return ''
     },
     userName() {
       return this.name || this.nickname || '用户'
     },
     avatarPreviewUrl() {
-      // 如果有新选择的头像预览，显示预览图
+      // 如果有 Blob URL（携带 token），直接使用
+      if (this.editFormAvatarBlobUrl) {
+        return this.editFormAvatarBlobUrl
+      }
+      // 如果有上传后的头像预览（新上传的头像），使用它
       if (this.editForm.avatarPreview) {
         return this.editForm.avatarPreview
       }
-      // 否则显示当前头像
-      return getAvatarUrl(this.editForm.avatar, this.defaultAvatar)
+      // 如果没有头像或头像为 false，返回空字符串（显示默认 icon）
+      return ''
+    }
+  },
+  watch: {
+    // 监听 avatar 变化，自动重新加载头像
+    avatar(newVal) {
+      if (newVal && newVal !== 'false') {
+        this.loadAvatar()
+      }
     }
   },
   mounted() {
@@ -251,9 +304,32 @@ export default {
     async fetchUserInfo() {
       try {
         await this.$store.dispatch('user/getInfo')
+        // 获取用户信息后加载头像
+        await this.loadAvatar()
       } catch (error) {
         console.error('获取用户信息失败:', error)
         throw error
+      }
+    },
+    async loadAvatar() {
+      // 释放旧的 Blob URL
+      if (this.avatarBlobUrl) {
+        URL.revokeObjectURL(this.avatarBlobUrl)
+        this.avatarBlobUrl = ''
+      }
+      // 如果有头像且不是 false，加载 Blob URL（通过 axios 携带 token）
+      if (this.avatar && this.avatar !== 'false') {
+        // 判断是否为 UUID 格式
+        if (/^[a-fA-F0-9-]{8,}$/.test(this.avatar)) {
+          try {
+            this.avatarBlobUrl = await fetchMediaObjectUrl(this.avatar)
+          } catch (error) {
+            console.error('加载头像失败:', error)
+          }
+        } else {
+          // 如果不是 UUID，可能是完整 URL，直接使用
+          this.avatarBlobUrl = this.avatar
+        }
       }
     },
     async showEditProfileDialog() {
@@ -275,9 +351,35 @@ export default {
         address: this.address || ''
       }
       this.avatarFile = null
+      this.editForm.avatarPreview = ''
+      // 释放旧的编辑弹窗头像 Blob URL
+      if (this.editFormAvatarBlobUrl) {
+        URL.revokeObjectURL(this.editFormAvatarBlobUrl)
+        this.editFormAvatarBlobUrl = ''
+      }
+      // 如果有头像且不是 false，加载 Blob URL（通过 axios 携带 token）
+      if (this.avatar && this.avatar !== 'false') {
+        // 判断是否为 UUID 格式
+        if (/^[a-fA-F0-9-]{8,}$/.test(this.avatar)) {
+          try {
+            this.editFormAvatarBlobUrl = await fetchMediaObjectUrl(this.avatar)
+          } catch (error) {
+            console.error('加载头像预览失败:', error)
+          }
+        } else {
+          // 如果不是 UUID，可能是完整 URL，直接使用
+          this.editFormAvatarBlobUrl = this.avatar
+        }
+      }
       this.editProfileDialogVisible = true
+      // 清除表单验证
+      this.$nextTick(() => {
+        if (this.$refs.editForm) {
+          this.$refs.editForm.clearValidate()
+        }
+      })
     },
-    handleAvatarChange(file) {
+    async handleAvatarChange(file) {
       // 验证文件类型
       const isImage = file.raw.type.startsWith('image/')
       if (!isImage) {
@@ -290,13 +392,32 @@ export default {
         this.$message.error('图片大小不能超过 2MB!')
         return
       }
-      this.avatarFile = file.raw
-      // 预览图片
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        this.editForm.avatarPreview = e.target.result
+
+      // 直接上传头像
+      this.avatarLoading = true
+      this.uploadStatus = '正在上传...'
+      try {
+        const uploadResult = await uploadAvatar(file.raw)
+        // 后端返回格式：{ media: { uuid: '...', type: '...' }, code: 200 }
+        const uuid = uploadResult.media?.uuid || uploadResult.data?.media?.uuid
+        if (uuid) {
+          this.editForm.avatar = uuid
+          this.uploadStatus = '上传成功，UUID: ' + uuid.substring(0, 8) + '...'
+          // 使用返回的 UUID 生成预览 URL（带 token）
+          this.editForm.avatarPreview = await fetchMediaObjectUrl(uuid)
+          this.$message.success('头像上传成功')
+        } else {
+          throw new Error('未获取到头像 UUID')
+        }
+      } catch (error) {
+        console.error('头像上传失败:', error)
+        this.$message.error(error.message || '头像上传失败')
+        this.uploadStatus = '上传失败'
+      } finally {
+        this.avatarLoading = false
+        // 重置文件选择，允许重复选择同一文件
+        this.$refs.avatarUpload.clearFiles()
       }
-      reader.readAsDataURL(file.raw)
     },
     async handleUpdateProfile() {
       // 表单验证
@@ -309,31 +430,30 @@ export default {
         return
       }
 
+      // 验证手机号
+      if (!this.editForm.phone_number || !this.editForm.phone_number.trim()) {
+        this.$message.warning('请输入手机号')
+        return
+      }
+      if (!/^1[3-9]\d{9}$/.test(this.editForm.phone_number)) {
+        this.$message.warning('请输入正确的手机号格式')
+        return
+      }
+
       this.editLoading = true
       try {
-        // 如果有新选择的头像文件，先上传头像
-        if (this.avatarFile) {
-          this.avatarLoading = true
-          try {
-            const uploadResult = await uploadAvatar(this.avatarFile)
-            // 假设返回 { avatar: 'uuid' }
-            this.editForm.avatar =
-              uploadResult.avatar || uploadResult.data?.avatar || ''
-            this.$message.success('头像上传成功')
-          } catch (error) {
-            this.$message.error(error.message || '头像上传失败')
-            this.avatarLoading = false
-            this.editLoading = false
-            return
-          } finally {
-            this.avatarLoading = false
-          }
-        }
-
-        // 更新用户信息
+        // 更新用户信息（头像已在 handleAvatarChange 中上传并获取 UUID）
         const result = await updateUserInfo(this.editForm)
         this.$message.success(result.message || '修改成功')
+
+        // 释放编辑弹窗的头像 Blob URL
+        if (this.editFormAvatarBlobUrl) {
+          URL.revokeObjectURL(this.editFormAvatarBlobUrl)
+          this.editFormAvatarBlobUrl = ''
+        }
+
         this.editProfileDialogVisible = false
+        this.uploadStatus = ''
 
         // 重新获取用户信息以更新界面
         await this.$store.dispatch('user/getInfo')
@@ -373,6 +493,10 @@ export default {
       })
     },
     handleLogout() {
+      // 释放头像 Blob URL
+      if (this.avatarBlobUrl) {
+        URL.revokeObjectURL(this.avatarBlobUrl)
+      }
       this.$confirm('确定要退出登录吗？', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -431,6 +555,22 @@ export default {
         display: flex;
         align-items: center;
 
+        .avatar-icon-wrapper {
+          width: 40px;
+          height: 40px;
+          border-radius: 10px;
+          background: #409eff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-right: 10px;
+
+          .avatar-icon {
+            font-size: 24px;
+            color: #fff;
+          }
+        }
+
         .user-avatar {
           cursor: pointer;
           width: 40px;
@@ -461,16 +601,43 @@ export default {
   .avatar-upload {
     text-align: center;
 
-    .avatar-preview {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 1px solid #dcdfe6;
+    .avatar-preview-wrapper {
+      display: inline-block;
+      position: relative;
+
+      .avatar-preview-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: #f5f7fa;
+        border: 1px dashed #dcdfe6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        i {
+          font-size: 40px;
+          color: #c0c4cc;
+        }
+      }
+
+      .avatar-preview {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 1px solid #dcdfe6;
+      }
     }
 
     .avatar-uploader {
       margin-top: 10px;
+    }
+
+    .upload-status {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #909399;
     }
   }
 }
